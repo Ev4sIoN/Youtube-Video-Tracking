@@ -14,14 +14,55 @@ To update your UA code after you have imported the json file go to **Tags** > **
 # Manual Way
 Make sure you are in your GTM container, then follow the steps :)
 
-1. Custom HTML
-	a. Go to **Tags** and add new
-	b. Choose Custom HTML
-	c. Copy and paste the script from _youtube-tracking-script.js_ into `<script>` tags inside the box.
+1. Creating DataLayers
+	* Go to **Variables**
+	* Under _User-Defined Variables_ choose **New**
+	* Choose variable type **Data Layer Variable**
+	* **Data Layer Variable Name**
+		* attributes.videoUrl
+		* attributes.videoTitle
+		* attributes.videoAction
+	* Repeat **b - d** until you have 3 with the above variables.
+ ![Custom HTML](http://d.pr/i/i6A5+)
+ 
+2. Triggers
+	* Go to **Triggers**
+	* Create a new Trigger with **type** _Custom Event_
+	* **Event name** == `youTubeTrack`
+	* Triggers on _Some Custom Events_
+	* Dropdown 1, 2, 3
+		* Video Interaction
+		* Matches RegEx (ignore case)
+		* Play|Pause|Watch to End|25%|50%|75%
+ ![Custom HTML](http://d.pr/i/FqiK+)
 
+ ### Tags
+ Go to **Tags** and do the following 2 steps
+
+3. Send Data to Analytics   
+	* Create a New Tag
+	* Choose **Universal Analytics**
+	* Enter your Analytics **ID** from your Analytics _Property_
+	* _Track Type_: **Event**
+	* _Category_: **YouTube Video Tracking** (you can make this whatever you want)
+	* _Action_: `{{Video Interaction}}`
+		* This will report, PLay, Pause, 25% Watched, etc
+		* This can be adjusted in the JS file if you need and know what you are doing.
+	* _Label_: `{{Video Title}}`
+		* This could also be sorted by the URL using `{{Video URL}}`
+	* Add a trigger and choose **YouTube Video Interaction**
+		* This can be named whatever you called it, its the trigger we created in step 2
+ ![Custom HTML](http://d.pr/i/4lYh+)
+
+4. Custom HTML
+	* Create a New Tag
+	* Choose Custom HTML
+	* Copy and paste the script from _youtube-tracking-script.js_ into `<script>` tags inside the box.
+	* Add trigger and choose **All Pages**
  ```
  <script>
 	// Contents from youtube-tracking-script.js here
  </script>
  ```
- ![Custom HTML](http://d.pr/i/3nSQ)
+ ![Custom HTML](http://d.pr/i/3nSQ+)
+ 

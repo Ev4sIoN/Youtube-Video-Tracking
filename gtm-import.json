@@ -1,0 +1,336 @@
+{
+    "exportFormatVersion": 2,
+    "exportTime": "2017-04-12 15:57:24",
+    "containerVersion": {
+        "path": "accounts/1310128060/containers/6729164/versions/1",
+        "accountId": "1310128060",
+        "containerId": "6729164",
+        "containerVersionId": "1",
+        "name": "YouTube Video Tracking",
+        "description": "This will track if a user Plays, Pauses or Finished a video. It will also record progress of the video that has been watched in increments of 25. So it will track 25%, 50% and 75% on top of the initial 3.",
+        "container": {
+            "path": "accounts/1310128060/containers/6729164",
+            "accountId": "1310128060",
+            "containerId": "6729164",
+            "name": "YouTube Video Tracking",
+            "publicId": "GTM-NBSD2RZ",
+            "usageContext": [
+                "WEB"
+            ],
+            "fingerprint": "1492012445401",
+            "tagManagerUrl": "https://tagmanager.google.com/#/container/accounts/1310128060/containers/6729164/workspaces?apiLink=container"
+        },
+        "tag": [
+            {
+                "accountId": "1310128060",
+                "containerId": "6729164",
+                "tagId": "2",
+                "name": "Video Tracking",
+                "type": "html",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "html",
+                        "value": "<script>\n\t// Respectfully copied and modified from \n\t// https://github.com/lunametrics/youtube-google-analytics\n\t// \n\t// Original implementation by LunaMetrics\n\tvar ytTracker = (function( document, window, config ) {\n\n\t  'use strict';\n\n\t  window.onYouTubeIframeAPIReady = (function() {\n\t    \n\t    var cached = window.onYouTubeIframeAPIReady;\n\n\t    return function() {\n\t        \n\t      if( cached ) {\n\n\t        cached.apply(this, arguments);\n\n\t      }\n\n\t      // This script won't work on IE 6 or 7, so we bail at this point if we detect that UA\n\t      if( !navigator.userAgent.match( /MSIE [67]./gi ) ) {\n\n\t        init(); \n\t    \n\t      }\n\n\t    };\n\n\t  })();\n\t  \n\t  var _config = config || {};\n\t  var forceSyntax = _config.forceSyntax || 0;\n\t  var dataLayerName = _config.dataLayerName || 'dataLayer';\n\t  // Default configuration for events\n\t  var eventsFired = {\n\t    'Play'        : true,\n\t    'Pause'       : true,\n\t    'Watch to End': true\n\t  };\n\t  \n\t  // Overwrites defaults with customizations, if any\n\t  var key;\n\t  for( key in _config.events ) {\n\n\t    if( _config.events.hasOwnProperty( key ) ) {\n\n\t      eventsFired[ key ] = _config.events[ key ];\n\n\t    }\n\n\t  }\n\t  \n\t  //*****//\n\t  // DO NOT EDIT ANYTHING BELOW THIS LINE EXCEPT CONFIG AT THE BOTTOM\n\t  //*****//\n\n\t  // Invoked by the YouTube API when it's ready\n\t  function init() {\n\n\t    var iframes = document.getElementsByTagName( 'iframe' );\n\t    var embeds  = document.getElementsByTagName( 'embed' );\n\n\t    digestPotentialVideos( iframes );\n\t    digestPotentialVideos( embeds );\n\n\t  }\n\n\t  var tag            = document.createElement( 'script' );\n\t  tag.src            = '//www.youtube.com/iframe_api';\n\t  var firstScriptTag = document.getElementsByTagName( 'script' )[0];\n\t  firstScriptTag.parentNode.insertBefore( tag, firstScriptTag );\n\n\t  // Take our videos and turn them into trackable videos with events\n\t  function digestPotentialVideos( potentialVideos ) {\n\n\t    var i;\n\n\t    for( i = 0; i < potentialVideos.length; i++ ) {       \n\t      var isYouTubeVideo = checkIfYouTubeVideo( potentialVideos[ i ] );       \n\t      if( isYouTubeVideo ) {\n\t        var normalizedYouTubeIframe = normalizeYouTubeIframe( potentialVideos[ i ] );\n\t        addYouTubeEvents( normalizedYouTubeIframe );\n\t      }\n\t    }\n\n\t  }   \n\n\t  // Determine if the element is a YouTube video or not   \n\t  function checkIfYouTubeVideo( potentialYouTubeVideo ) {\n\t    // Exclude already decorated videos     \n\t    if (potentialYouTubeVideo.getAttribute('data-gtm-yt')) {       \n\t      return false;\n\t    }\n\n\t    var potentialYouTubeVideoSrc = potentialYouTubeVideo.src || '';     \n\t    if( potentialYouTubeVideoSrc.indexOf( 'youtube.com/embed/' ) > -1 || potentialYouTubeVideoSrc.indexOf( 'youtube.com/v/' ) > -1 ) {\n\n\t      return true;\n\n\t    }\n\n\t    return false;\n\n\t  }\n\n\t  // Turn embed objects into iframe objects and ensure they have the right parameters\n\t  function normalizeYouTubeIframe( youTubeVideo ) {\n\t    \n\t    var a           = document.createElement( 'a' );\n\t        a.href      = youTubeVideo.src;\n\t        a.hostname  = 'www.youtube.com';\n\t        a.protocol  = document.location.protocol;\n\t    var tmpPathname = a.pathname.charAt( 0 ) === '/' ? a.pathname : '/' + a.pathname;  // IE10 shim\n\t    \n\t    // For security reasons, YouTube wants an origin parameter set that matches our hostname\n\t    var origin = window.location.protocol + '%2F%2F' + window.location.hostname + ( window.location.port ? ':' + window.location.port : '' );\n\n\t    if( a.search.indexOf( 'enablejsapi' ) === -1 ) {\n\n\t      a.search = ( a.search.length > 0 ? a.search + '&' : '' ) + 'enablejsapi=1';\n\n\t    }\n\n\t    // Don't set if testing locally\n\t    if( a.search.indexOf( 'origin' ) === -1  && window.location.hostname.indexOf( 'localhost' ) === -1 ) {\n\n\t      a.search = a.search + '&origin=' + origin;\n\n\t    }\n\n\t    if( youTubeVideo.type === 'application/x-shockwave-flash' ) {\n\n\t      var newIframe     = document.createElement( 'iframe' );\n\t      newIframe.height  = youTubeVideo.height;\n\t      newIframe.width   = youTubeVideo.width;\n\t      tmpPathname = tmpPathname.replace('/v/', '/embed/');\n\n\t      youTubeVideo.parentNode.parentNode.replaceChild( newIframe, youTubeVideo.parentNode );\n\n\t      youTubeVideo = newIframe;\n\n\t    }\n\n\t    a.pathname       = tmpPathname;\n\t    if(youTubeVideo.src !== a.href + a.hash) {\n\t    \n\t      youTubeVideo.src = a.href + a.hash;\n\n\t    }\n\n\t    youTubeVideo.setAttribute('data-gtm-yt', 'true');\n\n\t    return youTubeVideo;\n\n\t  }\n\n\t  // Add event handlers for events emitted by the YouTube API\n\t  function addYouTubeEvents( youTubeIframe ) {\n\n\t    youTubeIframe.pauseFlag  = false;\n\n\t    new YT.Player( youTubeIframe, {\n\n\t      events: {\n\n\t        onStateChange: function( evt ) {\n\n\t          onStateChangeHandler( evt, youTubeIframe );\n\n\t        }\n\n\t      }\n\n\t    } );\n\n\t  }\n\n\t  // Returns key/value pairs of percentages: number of seconds to achieve\n\t  function getMarks(duration) {\n\n\t    var marks = {}; \n\n\t    // For full support, we're handling Watch to End with percentage viewed\n\t    if (_config.events[ 'Watch to End' ] ) {\n\n\t      marks[ 'Watch to End' ] = duration * 99 / 100;\n\n\t    }\n\n\t    if( _config.percentageTracking ) {\n\n\t      var points = [];\n\t      var i;\n\n\t      if( _config.percentageTracking.each ) {\n\n\t        points = points.concat( _config.percentageTracking.each );\n\n\t      }\n\n\t      if( _config.percentageTracking.every ) {\n\n\t        var every = parseInt( _config.percentageTracking.every, 10 );\n\t        var num = 100 / every;\n\t        \n\t        for( i = 1; i < num; i++ ) {\n\t      \n\t          points.push(i * every);\n\n\t        }\n\n\t      }\n\n\t      for(i = 0; i < points.length; i++) {\n\n\t        var _point = points[i];\n\t        var _mark = _point + '%';\n\t        var _time = duration * _point / 100;\n\t        \n\t        marks[_mark] = Math.floor( _time );\n\n\t      }\n\n\t    }\n\n\t    return marks;\n\n\t  }\n\n\t  function checkCompletion(player, marks, videoId) {\n\n\t    var duration     = player.getDuration();\n\t    var currentTime  = player.getCurrentTime();\n\t    var playbackRate = player.getPlaybackRate();\n\t    var targetVideoTitle = player.getVideoData().title;\n\t    player[videoId] = player[videoId] || {};\n\t    var key;\n\n\t    for( key in marks ) {\n\n\t      if( marks[key] <= currentTime && !player[videoId][key] ) {\n\n\t        player[videoId][key] = true;\n\t        fireAnalyticsEvent( videoId, key, targetVideoTitle );\n\n\t      }\n\n\t    }\n\n\t  }\n\n\t  // Event handler for events emitted from the YouTube API\n\t  function onStateChangeHandler( evt, youTubeIframe ) {\n\t    var stateIndex     = evt.data;\n\t    var player         = evt.target;\n\t    var targetVideoUrl = player.getVideoUrl();\n\t    var targetVideoTitle = player.getVideoData().title;\n\t    var targetVideoId  = targetVideoUrl.match( /[?&]v=([^&#]*)/ )[ 1 ];  // Extract the ID    \n\t    var playerState    = player.getPlayerState();\n\t    var duration       = player.getDuration();\n\t    var marks          = getMarks(duration);\n\t    var playerStatesIndex = {\n\t      '1' : 'Play',\n\t      '2' : 'Pause'\n\t    };\n\t    var state = playerStatesIndex[ stateIndex ]; \n\n\t    youTubeIframe.playTracker = youTubeIframe.playTracker || {};\n\n\t    if( playerState === 1 && !youTubeIframe.timer ) {\n\n\t      clearInterval(youTubeIframe.timer);\n\n\t      youTubeIframe.timer = setInterval(function() {\n\n\t        // Check every second to see if we've hit any of our percentage viewed marks\n\t        checkCompletion(player, marks, youTubeIframe.videoId);\n\n\t      }, 1000);\n\n\t    } else {\n\n\t      clearInterval(youTubeIframe.timer);\n\t      youTubeIframe.timer = false;\n\n\t    }\n\n\t    // Playlist edge-case handler\n\t    if( stateIndex === 1 ) {\n\n\t      youTubeIframe.playTracker[ targetVideoId ] = true;\n\t      youTubeIframe.videoId = targetVideoId;\n\t      youTubeIframe.pauseFlag = false;\n\n\t    }\n\n\t    if( !youTubeIframe.playTracker[ youTubeIframe.videoId ] ) {\n\n\t      // This video hasn't started yet, so this is spam\n\t      return false;\n\n\t    }\n\n\t    if( stateIndex === 2 ) {\n\n\t      if( !youTubeIframe.pauseFlag ) { \n\t      \n\t        youTubeIframe.pauseFlag = true;\n\n\t      } else {\n\n\t        // We don't want to fire consecutive pause events\n\t        return false;\n\n\t      }\n\n\t    }\n\n\t    // If we're meant to track this event, fire it\n\t    if( eventsFired[ state ] ) {\n\t    \n\t      fireAnalyticsEvent( youTubeIframe.videoId, state, targetVideoTitle );\n\n\t    }\n\n\t  }\n\n\t  // Fire an event to Google Analytics or Google Tag Manager\n\t  function fireAnalyticsEvent( videoId, state, title ) {\n\n\t    var videoUrl = 'https://www.youtube.com/watch?v=' + videoId;\n\t    var videoTitle = title;\n\t    var _ga = window.GoogleAnalyticsObject;\n\t    var currentPage = window.location.pathname;\n\t    var language;\n\n\t    if ( currentPage.includes('en') ) {\n\t    \tlanguage = 'English';\n\t    } else if ( currentPage.includes('fr') ) {\n\t    \tlanguage = 'French';\n\t    }\n\n\t    state = state + ' ' + language\n\n\n\t    if( typeof window[ dataLayerName ] !== 'undefined' && !_config.forceSyntax ) { \n\t      \n\t      window[ dataLayerName ].push( {\n\n\t        'event'     : 'youTubeTrack',\n\t        'attributes': {\n\n\t          'videoUrl': videoUrl,\n\t          'videoTitle': title,\n\t          'videoAction': state\n\n\t        }\n\n\t      } );\n\n\t    } else if( typeof window[ _ga ] === 'function' && \n\t               typeof window[ _ga ].getAll === 'function' && \n\t               _config.forceSyntax !== 2 ) \n\t    {\n\n\t      window[ _ga ]( 'send', 'event', 'Videos', state, videoUrl );\n\n\t    } else if( typeof window._gaq !== 'undefined' && forceSyntax !== 1 ) {\n\n\t      window._gaq.push( [ '_trackEvent', 'Videos', state, videoUrl ] );\n\n\t    }\n\n\t  }\n\t  \n\t  return {\n\t    init : init,\n\t    digestPotentialVideos : digestPotentialVideos\n\t  }\n\t    \n\t})(document, window, {\n\t  'events': {\n\t    'Play': true,\n\t    'Pause': true,\n\t    'Watch to End': true\n\t  },\n\t  'percentageTracking': {\n\t    'every': 25,\n\t    'each': [ 10, 90 ]\n\t  }\n\t});\n\t/*\n\t * Configuration Details\n\t *\n\t * @property events object\n\t * Defines which events emitted by YouTube API\n\t * will be turned into Google Analytics or GTM events\n\t *\n\t * @property percentageTracking object\n\t * Object with configurations for percentage viewed events\n\t *\n\t *   @property each array\n\t *   Fires an event once each percentage ahs been reached\n\t *\n\t *   @property every number\n\t *   Fires an event for every n% viewed\n\t *\n\t * @property forceSyntax int 0, 1, or 2\n\t * Forces script to use Classic (2) or Universal(1)\n\t *\n\t * @property dataLayerName string\n\t * Tells script to use custom dataLayer name instead of default\n\t */\n\n\t $(function (){\n\t \t // Check all videos on the page\n\n\t \t function callTracker(){\n\t \t \tif((typeof YT !== \"undefined\") && YT && YT.Player){\n\t \t \t\tytTracker.init();\n\t \t \t} else {\n\t \t \t\tsetTimeout( callTracker, 500 );\n\t \t \t}\n\t \t }\n\t });\n</script>"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "supportDocumentWrite",
+                        "value": "false"
+                    }
+                ],
+                "fingerprint": "1492012445395",
+                "firingTriggerId": [
+                    "2147479553"
+                ],
+                "tagFiringOption": "ONCE_PER_EVENT"
+            },
+            {
+                "accountId": "1310128060",
+                "containerId": "6729164",
+                "tagId": "3",
+                "name": "YouTube Video Interaction",
+                "type": "ga",
+                "parameter": [
+                    {
+                        "type": "BOOLEAN",
+                        "key": "detectTitle",
+                        "value": "true"
+                    },
+                    {
+                        "type": "LIST",
+                        "key": "ignoredRef"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "useDebugVersion",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventCategory",
+                        "value": "YouTube Video Tracking"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "allowLinker",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "trackType",
+                        "value": "TRACK_EVENT"
+                    },
+                    {
+                        "type": "LIST",
+                        "key": "cookiePathCopy"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "clientInfo",
+                        "value": "true"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "campaignTrack",
+                        "value": "true"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventAction",
+                        "value": "{{Video Interaction}}"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "anonymizeIp",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventLabel",
+                        "value": "{{Video Title}}"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "webPropertyId",
+                        "value": "UA-12345-1"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "allowAnchor",
+                        "value": "false"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "allowHash",
+                        "value": "true"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "doubleClick",
+                        "value": "true"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setTrackerName",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventValue",
+                        "value": "5"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "sendHitsToGoogle",
+                        "value": "true"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "enableInPageLinkId",
+                        "value": "false"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "forceSsl",
+                        "value": "false"
+                    },
+                    {
+                        "type": "LIST",
+                        "key": "ignoredOrganic"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "detectFlash",
+                        "value": "true"
+                    }
+                ],
+                "fingerprint": "1492012629167",
+                "firingTriggerId": [
+                    "5"
+                ],
+                "tagFiringOption": "ONCE_PER_EVENT"
+            }
+        ],
+        "trigger": [
+            {
+                "accountId": "1310128060",
+                "containerId": "6729164",
+                "triggerId": "5",
+                "name": "YouTube Video Interaction",
+                "type": "CUSTOM_EVENT",
+                "customEventFilter": [
+                    {
+                        "type": "EQUALS",
+                        "parameter": [
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg0",
+                                "value": "{{_event}}"
+                            },
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg1",
+                                "value": "youTubeTrack"
+                            }
+                        ]
+                    }
+                ],
+                "filter": [
+                    {
+                        "type": "MATCH_REGEX",
+                        "parameter": [
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg0",
+                                "value": "{{Video Interaction}}"
+                            },
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg1",
+                                "value": "Play|Pause|Watch to End|25%|50%|75%"
+                            },
+                            {
+                                "type": "BOOLEAN",
+                                "key": "ignore_case",
+                                "value": "true"
+                            }
+                        ]
+                    }
+                ],
+                "fingerprint": "1492012445394"
+            }
+        ],
+        "variable": [
+            {
+                "accountId": "1310128060",
+                "containerId": "6729164",
+                "variableId": "1",
+                "name": "Video Interaction",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setDefaultValue",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "attributes.videoAction"
+                    }
+                ],
+                "fingerprint": "1492012445393"
+            },
+            {
+                "accountId": "1310128060",
+                "containerId": "6729164",
+                "variableId": "2",
+                "name": "Video Title",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setDefaultValue",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "attributes.videoTitle"
+                    }
+                ],
+                "fingerprint": "1492012445394"
+            },
+            {
+                "accountId": "1310128060",
+                "containerId": "6729164",
+                "variableId": "3",
+                "name": "Video URL",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "setDefaultValue",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "attributes.videoUrl"
+                    }
+                ],
+                "fingerprint": "1492012445394"
+            }
+        ],
+        "builtInVariable": [
+            {
+                "accountId": "1310128060",
+                "containerId": "6729164",
+                "type": "PAGE_URL",
+                "name": "Page URL"
+            },
+            {
+                "accountId": "1310128060",
+                "containerId": "6729164",
+                "type": "PAGE_HOSTNAME",
+                "name": "Page Hostname"
+            },
+            {
+                "accountId": "1310128060",
+                "containerId": "6729164",
+                "type": "PAGE_PATH",
+                "name": "Page Path"
+            },
+            {
+                "accountId": "1310128060",
+                "containerId": "6729164",
+                "type": "REFERRER",
+                "name": "Referrer"
+            },
+            {
+                "accountId": "1310128060",
+                "containerId": "6729164",
+                "type": "EVENT",
+                "name": "Event"
+            }
+        ],
+        "fingerprint": "1492012634016",
+        "tagManagerUrl": "https://tagmanager.google.com/#/versions/accounts/1310128060/containers/6729164/versions/1?apiLink=version"
+    }
+}

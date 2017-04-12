@@ -339,6 +339,8 @@ var ytTracker = (function( document, window, config ) {
     	language = 'English';
     } else if ( currentPage.includes('fr') ) {
     	language = 'French';
+    } else {
+    	language = '';
     }
 
     state = state + ' ' + language

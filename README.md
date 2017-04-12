@@ -59,10 +59,10 @@ Make sure you are in your GTM container, then follow the steps :)
 	* Choose Custom HTML
 	* Copy and paste the script from _youtube-tracking-script.js_ into `<script>` tags inside the box.
 	* Add trigger and choose **All Pages**
- ```
- <script>
-	// Contents from youtube-tracking-script.js here
- </script>
- ```
- ![Custom HTML](http://d.pr/i/3nSQ+)
+		```
+		<script>
+		// Contents from youtube-tracking-script.js here
+		</script>
+		```
+		![Custom HTML](http://d.pr/i/3nSQ+)
  
